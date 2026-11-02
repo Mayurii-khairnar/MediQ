@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediQ | Patient Queue Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-icon">✚</span><div><b>MediQ</b><small>Patient Management</small></div></div>
+    <div class="nav-label">WORKSPACE</div>
+    <button class="nav active" data-view="dashboard">▦ <span>Dashboard</span></button>
+    <button class="nav" data-view="register">＋ <span>Register Patient</span></button>
+    <button class="nav" data-view="queues">☷ <span>Waiting Queues</span></button>
+    <button class="nav" data-view="patients">♙ <span>Patient Records</span></button>
+    <button class="nav" data-view="history">◷ <span>Consultation History</span></button>
+    <div class="sidebar-bottom"><span class="status-dot"></span> Local demo server <small id="connection">Checking connection…</small></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar"><div><span class="eyebrow">HOSPITAL OPERATIONS</span><h1 id="page-title">Dashboard</h1></div><div class="top-right"><span class="date" id="today"></span><div class="avatar">MQ</div></div></header>
+
+    <section class="view" id="view-dashboard">
+      <div class="welcome"><div><span class="eyebrow light">PATIENT FLOW OVERVIEW</span><h2>Good day, Care Team</h2><p>Manage patient registration, waiting queues, and consultations in one place.</p></div><button class="button button-white" data-goto="register">＋ Register patient</button></div>
+      <div class="stats">
+        <article class="stat-card"><div class="stat-top"><span>Total patients</span><span class="stat-icon blue">♙</span></div><strong id="stat-total">0</strong><small>Registered records</small></article>
+        <article class="stat-card"><div class="stat-top"><span>Normal waiting</span><span class="stat-icon violet">☷</span></div><strong id="stat-normal">0</strong><small>In normal queue</small></article>
+        <article class="stat-card"><div class="stat-top"><span>Emergency waiting</span><span class="stat-icon red">✚</span></div><strong id="stat-emergency">0</strong><small>Priority queue</small></article>
+        <article class="stat-card"><div class="stat-top"><span>Completed</span><span class="stat-icon green">✓</span></div><strong id="stat-completed">0</strong><small>Consultations completed</small></article>
+      </div>
+      <div class="content-grid">
+        <article class="panel"><div class="panel-heading"><div><h3>Waiting queues</h3><p>Emergency patients are called first.</p></div><button class="text-button" data-goto="queues">View queues →</button></div><div id="dashboard-queues" class="queue-preview"></div></article>
+        <article class="panel call-panel"><div class="panel-heading"><div><h3>Consultation desk</h3><p>Call the next waiting patient.</p></div><span class="pulse"></span></div><div class="call-symbol">＋</div><h3>Ready for next patient?</h3><p class="muted">The emergency queue is checked before the normal queue.</p><button class="button button-primary full" id="call-next">Call next patient</button><div id="call-result" class="result-box hidden"></div></article>
+      </div>
+      <article class="panel"><div class="panel-heading"><div><h3>Recent patient records</h3><p>Latest registrations and status updates.</p></div><button class="text-button" data-goto="patients">All records →</button></div><div class="table-wrap"><table><thead><tr><th>TOKEN</th><th>PATIENT</th><th>CATEGORY</th><th>HEALTH PROBLEM</th><th>STATUS</th></tr></thead><tbody id="recent-table"></tbody></table></div></article>
+    </section>
+
+    <section class="view hidden" id="view-register">
+      <div class="section-intro"><span class="eyebrow">NEW RECORD</span><h2>Patient registration</h2><p>Add patient details and place them in the appropriate waiting queue.</p></div>
+      <div class="panel form-panel"><form id="register-form"><div class="form-grid">
+        <label>Patient ID <input type="number" id="patient-id" min="1" required placeholder="e.g. 1001"></label>
+        <label>Full name <input type="text" id="patient-name" required maxlength="80" placeholder="Enter patient name"></label>
+        <label>Age <input type="number" id="patient-age" min="0" max="120" required placeholder="Age in years"></label>
+        <label>Patient category <select id="patient-category"><option value="normal">Normal</option><option value="emergency">Emergency</option></select></label>
+        <label class="wide">Health problem <textarea id="patient-problem" required maxlength="300" rows="3" placeholder="Briefly describe the reported health problem"></textarea></label>
+      </div><div class="form-actions"><span class="muted">A token number is generated automatically.</span><button class="button button-primary" type="submit">Register patient →</button></div></form><div id="register-result" class="result-box hidden"></div></div>
+    </section>
+
+    <section class="view hidden" id="view-queues">
+      <div class="section-intro"><span class="eyebrow">LIVE WAITING LIST</span><h2>Waiting queues</h2><p>Patients are listed in arrival order within each category.</p></div>
+      <div class="content-grid"><article class="panel"><div class="panel-heading"><div><h3><span class="category-dot red-dot"></span> Emergency queue</h3><p>Priority queue · served first</p></div><span class="count-pill" id="emergency-count">0</span></div><div id="emergency-list"></div></article><article class="panel"><div class="panel-heading"><div><h3><span class="category-dot blue-dot"></span> Normal queue</h3><p>First in, first out</p></div><span class="count-pill" id="normal-count">0</span></div><div id="normal-list"></div></article></div>
+      <div class="queue-call-row"><div><b>Ready to start a consultation?</b><p class="muted">MediQ will select an emergency patient first when one is waiting.</p></div><button class="button button-primary" id="call-next-queue">Call next patient</button></div>
+      <div id="queue-call-result" class="result-box hidden"></div>
+    </section>
+
+    <section class="view hidden" id="view-patients">
+      <div class="section-intro"><span class="eyebrow">PATIENT DIRECTORY</span><h2>Patient records</h2><p>Search by ID or name and review each patient's current status.</p></div>
+      <article class="panel"><div class="toolbar"><input id="patient-search" class="search" placeholder="⌕  Search patient ID or name…"><button class="button button-outline" id="refresh-patients">Refresh</button></div><div class="table-wrap"><table><thead><tr><th>TOKEN</th><th>ID</th><th>PATIENT</th><th>AGE</th><th>CATEGORY</th><th>HEALTH PROBLEM</th><th>STATUS</th><th>ACTION</th></tr></thead><tbody id="patients-table"></tbody></table></div></article>
+    </section>
+
+    <section class="view hidden" id="view-history">
+      <div class="section-intro"><span class="eyebrow">CONSULTATION RECORDS</span><h2>Consultation history</h2><p>Completed consultations and recently called patients.</p></div>
+      <div class="content-grid"><article class="panel"><div class="panel-heading"><div><h3>Completed consultations</h3><p>Maintained using a linked list in the C++ backend.</p></div></div><div id="completed-list"></div></article><article class="panel"><div class="panel-heading"><div><h3>Recent consultations</h3><p>Most recent entries appear first (stack).</p></div></div><div id="recent-list"></div></article></div>
+      <article class="panel"><div class="panel-heading"><div><h3>Update consultation status</h3><p>Complete a patient currently under consultation.</p></div></div><form id="complete-form" class="inline-form"><label>Patient ID<input type="number" id="complete-id" required placeholder="Enter patient ID"></label><button class="button button-primary">Mark as completed</button></form><div id="complete-result" class="result-box hidden"></div></article>
+    </section>
+    <footer> <span>✚ MediQ</span> <span>Educational demo · Not for real clinical use</span></footer>
+  </main>
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
